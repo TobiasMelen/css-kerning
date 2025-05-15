@@ -12,7 +12,7 @@ ${spec?.kernings.reduce(
 :is(.${spec.chars.map(sanitizeClass).join(",.")}) + :is(.${kerning.chars
       .map(sanitizeClass)
       .join(",.")}) {
-  margin-left: ${kerning.kerning / 1000}em;
+  margin-left: ${kerning.kerning}em;
 }`,
   ""
 )}`,

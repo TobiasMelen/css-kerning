@@ -1,10 +1,24 @@
 import { Font } from "opentype.js";
 
+const isWoff2 = (buffer: ArrayBuffer) => {
+  const brotliSignature = [0x77, 0x4f, 0x46, 0x32];
+  const dataView = new DataView(buffer);
+  return brotliSignature.some((char, index) => char == dataView.getInt8(index));
+};
+
 const parseFontAsyncish = async (blob: Blob) => {
-  const [opentype, arrayBuffer] = await Promise.all([
-    import("../vendor/opentype.module") as Promise<typeof import("opentype.js")>,
-    blob.arrayBuffer(),
-  ]);
+  const opentypeImport = import("../vendor/opentype.module.modified");
+
+  let arrayBuffer = await blob.arrayBuffer();
+  if (isWoff2(arrayBuffer)) {
+    const decompress = await import("woff2-encoder/decompress").then(
+      (brotli) => brotli.default
+    );
+    const decompressed = await decompress(arrayBuffer);
+    arrayBuffer = decompressed.buffer;
+  }
+  const opentype = await opentypeImport;
+
   /* opentype parsing is a sync thing,
    * At least put the operation on the event loop.
    */
@@ -52,16 +66,19 @@ export default async function extractFontInfo(
     .map((glyph1) => ({
       chars: [String.fromCharCode(glyph1.unicode!)],
       kernings: Object.entries(
-        unicodeGlyphs.reduce((acc, glyph2) => {
-          const kerning = font.getKerningValue(glyph1, glyph2);
-          if (kerning) {
-            acc[kerning] ??= [];
-            acc[kerning].push(String.fromCharCode(glyph2.unicode!));
-          }
-          return acc;
-        }, {} as Record<number, string[]>)
+        unicodeGlyphs.reduce(
+          (acc, glyph2) => {
+            const kerning = font.getKerningValue(glyph1, glyph2);
+            if (kerning) {
+              acc[kerning] ??= [];
+              acc[kerning].push(String.fromCharCode(glyph2.unicode!));
+            }
+            return acc;
+          },
+          {} as Record<number, string[]>
+        )
       ).map(([value, chars]) => ({
-        kerning: parseInt(value),
+        kerning: parseInt(value) / (font.tables.head.unitsPerEm ?? 1000),
         chars,
       })),
     }))

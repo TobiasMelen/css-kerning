@@ -1,6 +1,6 @@
 import { css, keyframes } from "goober";
 import { ComponentProps } from "preact";
-import { useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import useFontParsing from "./font/useFontParsing";
 
 const letterAnimate = keyframes`
@@ -41,7 +41,7 @@ const SeperatedMessage = ({ children }: { children: string }) => (
     {children.split("").map((char, index) => (
       <span
         className={char}
-        key={`${index}_${char}`}
+        key={index}
         style={{ animationDelay: `${12.5 * index}ms` }}
       >
         {char !== " " ? char : "\u00A0"}
@@ -67,6 +67,12 @@ export default function App() {
     customClassname,
     fileBlob
   );
+
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    kernings?.fontName && setText(kernings.fontName);
+  }, [kernings?.fontName]);
 
   return (
     <>
@@ -104,13 +110,23 @@ export default function App() {
       >
         {kernings ? (
           <Link
+            style={{ position: "relative" }}
             className={className}
             key={kernings?.fontName}
-            contentEditable
           >
-            <SeperatedMessage>
-              {kernings?.fontName ?? "Select a font"}
-            </SeperatedMessage>
+            <SeperatedMessage>{text}</SeperatedMessage>
+            <span
+              style={{
+                position: "absolute",
+                color: "rgba(0,0,0,0.1)",
+                fontKerning: "optimizeLegibility",
+                caretColor: "black",
+              }}
+              contentEditable
+              onInput={(event) => setText(event.currentTarget.textContent!)}
+            >
+              {kernings.fontName}
+            </span>
           </Link>
         ) : (
           <Link onClick={() => fileUpload.current?.click()}>
