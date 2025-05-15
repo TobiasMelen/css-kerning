@@ -1,0 +1,29 @@
+name: Deploy Vite App to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write # Only need write access to repository contents
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build -- --base=/${{ github.repository.split('/')[1] }}/
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
