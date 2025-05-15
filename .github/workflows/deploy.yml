@@ -15,12 +15,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build
-        run: npm run build -- --base=/${{ github.repository.split('/')[1] }}/
+        run: npm run build -- --base=/${{ github.event.repository.name }}/
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
