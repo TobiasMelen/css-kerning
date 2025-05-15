@@ -141,9 +141,15 @@ export default function App() {
             padding: 1em;
             cursor: pointer;
           `}
-          onClick={loadInterExample}
+          onClick={
+            kernings
+              ? () => {
+                  setFileBlob(undefined);
+                }
+              : loadInterExample
+          }
         >
-          Use Inter as example
+          {kernings ? "Clear loaded font" : "Use Inter as example"}
         </a>
       </div>
     </>
