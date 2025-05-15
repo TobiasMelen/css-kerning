@@ -37,4 +37,4 @@ ${_==null?void 0:_.kernings.reduce((r,l)=>r+`
             right: 0;
             padding: 1em;
             cursor: pointer;
-          `,onClick:r,children:"Use Inter as example"})]})]})}ze(k(mt,{}),document.getElementById("app"));
+          `,onClick:a?()=>{_(void 0)}:r,children:a?"Clear loaded font":"Use Inter as example"})]})]})}ze(k(mt,{}),document.getElementById("app"));
